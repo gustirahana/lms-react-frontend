@@ -29,7 +29,7 @@ export function validateProductionOrigins(env) {
   }
 }
 
-function validatePublicMetadata(env) {
+export function validatePublicMetadata(env) {
   for (const [name, fallback, maxLength] of [
     ['VITE_APP_NAME', 'JakIja Learn', 128],
     ['VITE_APP_VERSION', '0.1.0', 64],
