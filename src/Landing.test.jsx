@@ -35,13 +35,13 @@ describe('public landing and demo entry', () => {
     const user = userEvent.setup();
     render(<App />);
     await user.click(screen.getByRole('button', { name: 'Design', exact: true }));
-    expect(screen.getByRole('status').textContent).toBe('1 course to explore');
+    expect(screen.getByRole('status').textContent).toBe('3 courses to explore');
     expect(screen.queryByRole('button', { name: 'Preview Build your first React workspace' })).toBeNull();
     await user.type(screen.getByRole('searchbox', { name: 'Search sample courses' }), 'no matching subject');
     await user.click(screen.getByRole('button', { name: 'Find courses' }));
     expect(screen.getByRole('heading', { name: 'No courses match that search.' })).toBeTruthy();
     await user.click(screen.getByRole('button', { name: 'Show all courses' }));
-    expect(screen.getByRole('status').textContent).toBe('3 courses to explore');
+    expect(screen.getByRole('status').textContent).toBe('9 courses to explore');
   });
 
   it('traps focus in the public course preview and restores the opener on Escape', async () => {

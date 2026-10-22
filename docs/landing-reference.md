@@ -9,7 +9,7 @@ Screenshot SHA-256: `296f00c18544c735028a1e89f835d81644c83a19f5a03d1d45b70999af3
 
 Observed patterns: white/navy typography, split photographic hero, overlapping navy information panel, course groups, course thumbnails, learner-oriented sections, and footer navigation. The reference's counters, testimonials, instructor biographies, and commerce features do not describe this project and were not reused.
 
-The implementation adapts that hierarchy to JakIja: original generated photography, a public search/filter over the actual three seeded sample courses, keyboard-accessible course previews, a learner-workspace preview, shared demo credentials, educational-purpose disclosure, and `Creator: JakIja` links to the original upstream project. It retains the existing authenticated learner app and server-managed cookie login.
+The implementation adapts that hierarchy to JakIja: original generated photography, a public search/filter over the seeded sample courses, keyboard-accessible course previews, a learner-workspace preview, shared demo credentials, educational-purpose disclosure, and `Creator: JakIja` links to the original upstream project. It retains the existing authenticated learner app and server-managed cookie login.
 
 ## Assets
 

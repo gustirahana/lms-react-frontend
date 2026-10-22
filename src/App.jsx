@@ -1,40 +1,27 @@
+import { useLanguage, LanguageProvider, LanguageSwitcher, localizeCourse, courseLanguageKey, matchesCourseLanguage } from "./i18n.jsx";
 import { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  ArrowRight,
-  Bell,
-  BookOpen,
-  CalendarDays,
-  ChevronDown,
-  CircleHelp,
-  Clock3,
-  Compass,
-  GraduationCap,
-  LayoutDashboard,
-  LogOut,
-  Menu,
-  Search,
-  X,
-} from 'lucide-react';
+import { ArrowRight, Bell, BookOpen, CalendarDays, ChevronDown, CircleHelp, Clock3, Compass, GraduationCap, LayoutDashboard, LogOut, Menu, Search, X } from 'lucide-react';
 import { getDashboard, getCourses } from './api/client.js';
 import { getSession, isUnauthorized, login, logout, refreshSession } from './api/auth.js';
 import { appConfig } from './config.js';
 import { openRealtimeChannels } from './realtime.js';
 import Landing from './Landing.jsx';
 import { demoAccount } from './demo.js';
-
-const navigation = [
-  { label: 'Overview', icon: LayoutDashboard },
-  { label: 'My courses', icon: BookOpen },
-  { label: 'Explore courses', icon: Compass },
-];
-
+const navigation = [{
+  label: 'Overview',
+  icon: LayoutDashboard
+}, {
+  label: 'My courses',
+  icon: BookOpen
+}, {
+  label: 'Explore courses',
+  icon: Compass
+}];
 function initials(value = '') {
-  return value.trim().split(/[\s@._-]+/).filter(Boolean).slice(0, 2)
-    .map((part) => part[0].toUpperCase()).join('');
+  return value.trim().split(/[\s@._-]+/).filter(Boolean).slice(0, 2).map(part => part[0].toUpperCase()).join('');
 }
-
 function mergeMessages(current, incoming) {
-  const messagesById = new Map(current.map((message) => [message.id, message]));
+  const messagesById = new Map(current.map(message => [message.id, message]));
   for (const message of incoming) {
     if (message && typeof message.id === 'string' && typeof message.body === 'string') {
       messagesById.set(message.id, message);
@@ -42,21 +29,25 @@ function mergeMessages(current, incoming) {
   }
   return [...messagesById.values()].sort((left, right) => (left.created_at || '').localeCompare(right.created_at || ''));
 }
-
 function mergeNotifications(current, incoming) {
-  const itemsById = new Map(current.map((notification) => [notification.id, notification]));
+  const itemsById = new Map(current.map(notification => [notification.id, notification]));
   for (const notification of incoming) {
     if (notification && typeof notification.id === 'string') itemsById.set(notification.id, notification);
   }
   return [...itemsById.values()].sort((left, right) => (right.created_at || '').localeCompare(left.created_at || ''));
 }
-
-function LoginScreen({ onLogin, error, busy }) {
+function LoginScreen({
+  onLogin,
+  error,
+  busy
+}) {
+  const {
+    t
+  } = useLanguage();
   const demoRequested = window.location.hash === '#signin-demo';
   const [email, setEmail] = useState(demoRequested ? demoAccount.email : '');
   const [password, setPassword] = useState(demoRequested ? demoAccount.password : '');
-
-  const submit = async (event) => {
+  const submit = async event => {
     event.preventDefault();
     try {
       await onLogin(email.trim(), password);
@@ -64,55 +55,59 @@ function LoginScreen({ onLogin, error, busy }) {
       setPassword('');
     }
   };
-
-  return (
-    <main className="auth-screen">
+  return <main className="auth-screen">
       <form className="auth-card" onSubmit={submit}>
-        <a className="auth-home" href="#">← Back to JakIja Learn</a>
+        <LanguageSwitcher /><a className="auth-home" href="#">{t("← Back to JakIja Learn")}</a>
         <div className="brand-mark"><GraduationCap size={21} strokeWidth={2.2} /></div>
-        <span className="section-kicker">LEARNER SPACE</span>
-        <h1>Welcome back</h1>
-        <p>Sign in to continue your learning.</p>
-        <label htmlFor="login-email">Email address</label>
-        <input id="login-email" autoComplete="username" type="email" required value={email}
-          onChange={(event) => setEmail(event.target.value)} />
-        <label htmlFor="login-password">Password</label>
-        <input id="login-password" autoComplete="current-password" type="password" required value={password}
-          onChange={(event) => setPassword(event.target.value)} />
-        <div className="auth-demo-info"><p>Just looking around? Use our shared learner account.</p><button className="button button-outline" type="button" disabled={busy} onClick={() => { setEmail(demoAccount.email); setPassword(demoAccount.password); }}>Fill demo credentials</button></div>
-        <p className="auth-demo-warning">Demo activity is shared. Use fictional information only. The free API host may take a moment to wake up.</p>
-        {error && <p className="auth-error" role="alert">{error}</p>}
+        <span className="section-kicker">{t("LEARNER SPACE")}</span>
+        <h1>{t("Welcome back")}</h1>
+        <p>{t("Sign in to continue your learning.")}</p>
+        <label htmlFor="login-email">{t("Email address")}</label>
+        <input id="login-email" autoComplete="username" type="email" required value={email} onChange={event => setEmail(event.target.value)} />
+        <label htmlFor="login-password">{t("Password")}</label>
+        <input id="login-password" autoComplete="current-password" type="password" required value={password} onChange={event => setPassword(event.target.value)} />
+        <div className="auth-demo-info"><p>{t("Just looking around? Use our shared learner account.")}</p><button className="button button-outline" type="button" disabled={busy} onClick={() => {
+          setEmail(demoAccount.email);
+          setPassword(demoAccount.password);
+        }}>{t("Fill demo credentials")}</button></div>
+        <p className="auth-demo-warning">{t("Demo activity is shared. Use fictional information only. The free API host may take a moment to wake up.")}</p>
+        {error && <p className="auth-error" role="alert">{t(error)}</p>}
         <button className="button button-dark auth-submit" type="submit" disabled={busy}>
-          {busy ? 'Signing in…' : 'Sign in'}
+          {t(busy ? 'Signing in…' : 'Sign in')}
         </button>
       </form>
-    </main>
-  );
+    </main>;
 }
-
-function Sidebar({ active, onNavigate, open, onClose, user, onLogout, modalOpen }) {
+function Sidebar({
+  active,
+  onNavigate,
+  open,
+  onClose,
+  user,
+  onLogout,
+  modalOpen
+}) {
+  const {
+    t
+  } = useLanguage();
   const sidebarRef = useRef(null);
   const closeButtonRef = useRef(null);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
-
   useEffect(() => {
     if (!open) return undefined;
     const mobileViewport = window.matchMedia('(max-width: 850px)');
     if (!mobileViewport.matches) return undefined;
     const previousFocus = document.activeElement;
     closeButtonRef.current?.focus();
-
-    const handleKeyDown = (event) => {
+    const handleKeyDown = event => {
       if (event.key === 'Escape') {
         event.preventDefault();
         onCloseRef.current();
         return;
       }
       if (event.key !== 'Tab' || !sidebarRef.current) return;
-      const focusable = [...sidebarRef.current.querySelectorAll(
-        'button:not([disabled]), a[href], input:not([disabled]), [tabindex]:not([tabindex="-1"])',
-      )].filter((element) => element.getClientRects().length > 0);
+      const focusable = [...sidebarRef.current.querySelectorAll('button:not([disabled]), a[href], input:not([disabled]), [tabindex]:not([tabindex="-1"])')].filter(element => element.getClientRects().length > 0);
       if (!focusable.length) return;
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
@@ -124,8 +119,7 @@ function Sidebar({ active, onNavigate, open, onClose, user, onLogout, modalOpen 
         first.focus();
       }
     };
-
-    const handleViewportChange = (event) => {
+    const handleViewportChange = event => {
       if (!event.matches) onCloseRef.current();
     };
     document.addEventListener('keydown', handleKeyDown);
@@ -136,106 +130,120 @@ function Sidebar({ active, onNavigate, open, onClose, user, onLogout, modalOpen 
       if (previousFocus instanceof HTMLElement && previousFocus.isConnected) previousFocus.focus();
     };
   }, [open]);
-
-  return (
-    <>
-      {open && <button className="mobile-scrim" tabIndex={-1} aria-hidden="true" aria-label="Close menu" onClick={onClose} />}
-      <aside id="learner-sidebar" ref={sidebarRef} className={`sidebar ${open ? 'sidebar-open' : ''}`} role={open ? 'dialog' : undefined} aria-modal={open ? 'true' : undefined} aria-label="Learner navigation" inert={modalOpen}>
+  return <>
+      {open && <button className="mobile-scrim" tabIndex={-1} aria-hidden="true" aria-label={t("Close menu")} onClick={onClose} />}
+      <aside id="learner-sidebar" ref={sidebarRef} className={t(`sidebar ${open ? 'sidebar-open' : ''}`)} role={open ? 'dialog' : undefined} aria-modal={open ? 'true' : undefined} aria-label={t("Learner navigation")} inert={modalOpen}>
         <div className="brand-row">
           <div className="brand-mark"><GraduationCap size={21} strokeWidth={2.2} /></div>
-          <span className="brand-name">jakija<span className="brand-period" aria-hidden="true">.</span></span>
-          <button ref={closeButtonRef} className="mobile-close icon-button" onClick={onClose} aria-label="Close menu"><X size={19} /></button>
+          <span className="brand-name">{t("jakija")}<span className="brand-period" aria-hidden="true">.</span></span>
+          <button ref={closeButtonRef} className="mobile-close icon-button" onClick={onClose} aria-label={t("Close menu")}><X size={19} /></button>
         </div>
-        <div className="workspace-label">LEARNER SPACE</div>
-        <nav className="primary-nav" aria-label="Main navigation">
-          {navigation.map(({ label, icon: Icon }) => (
-            <button key={label} className={`nav-item ${active === label ? 'nav-active' : ''}`}
-              aria-current={active === label ? 'page' : undefined}
-              onClick={() => { onNavigate(label); onClose(); }}>
-              <Icon size={18} strokeWidth={1.8} /><span>{label}</span>
-            </button>
-          ))}
+        <div className="workspace-label">{t("LEARNER SPACE")}</div>
+        <nav className="primary-nav" aria-label={t("Main navigation")}>
+          {navigation.map(({
+          label,
+          icon: Icon
+        }) => <button key={label} className={t(`nav-item ${active === label ? 'nav-active' : ''}`)} aria-current={active === label ? 'page' : undefined} onClick={() => {
+          onNavigate(label);
+          onClose();
+        }}>
+              <Icon size={18} strokeWidth={1.8} /><span>{t(label)}</span>
+            </button>)}
         </nav>
         <div className="sidebar-bottom">
-          <button className="profile-row" onClick={onLogout} title="Sign out">
+          <button className="profile-row" onClick={onLogout} title={t("Sign out")}>
             <div className="avatar avatar-profile" aria-hidden="true">{initials(user?.displayName || user?.email)}</div>
             <span className="profile-copy">
               <strong>{user?.displayName || user?.email}</strong>
-              <span>{user?.role || 'Learner'} · Sign out</span>
+              <span>{t(user?.role || 'Learner')} {t("· Sign out")}</span>
             </span>
             <LogOut size={16} className="profile-more" />
           </button>
         </div>
       </aside>
-    </>
-  );
+    </>;
 }
-
-function CourseArt({ course, compact = false }) {
-  return (
-    <div className={`course-art art-${course.accent} ${compact ? 'course-art-compact' : ''}`} aria-hidden="true">
+function CourseArt({
+  course,
+  compact = false
+}) {
+  const {
+    t
+  } = useLanguage();
+  return <div className={t(`course-art art-${course.accent} ${compact ? 'course-art-compact' : ''}`)} aria-hidden="true">
       <div className="art-orb art-orb-one" />
       <div className="art-orb art-orb-two" />
       <div className="art-symbol">{course.icon}</div>
-      <span className="art-index">{course.category}</span>
-      <span className="art-scribble">JakIja Learn</span>
-    </div>
-  );
+      <span className="art-index">{t(course.category)}</span>
+      <span className="art-scribble">{t("JakIja Learn")}</span>
+    </div>;
 }
-
-function CourseCard({ course, onOpen, progress = false }) {
-  return (
-    <article className="course-card">
-      <button className="course-art-button" onClick={() => onOpen(course)} aria-label={`Open ${course.title}`}>
+function CourseCard({
+  course,
+  onOpen,
+  progress = false
+}) {
+  const {
+    t
+  } = useLanguage();
+  return <article className="course-card">
+      <button className="course-art-button" onClick={() => onOpen(course)} aria-label={t(`Open ${course.title}`)}>
         <CourseArt course={course} />
       </button>
       <div className="course-card-body">
-        <div className="course-meta-row"><span className="course-category">{course.category}</span></div>
+        <div className="course-meta-row"><span className="course-category">{t(course.category)}</span><span className="course-language">{t(courseLanguageKey(course.languages))}</span></div>
         <button className="course-title-button" onClick={() => onOpen(course)}><h3>{course.title}</h3></button>
         <div className="instructor-row">
-          <span className={`avatar avatar-${course.accent}`} aria-hidden="true">{initials(course.instructor)}</span>
+          <span className={t(`avatar avatar-${course.accent}`)} aria-hidden="true">{initials(course.instructor)}</span>
           <span>{course.instructor}</span>
         </div>
         <div className="course-footer">
-          <span><Clock3 size={14} /> {course.duration}</span>
-          <span>{course.lessons} lessons</span>
-          <span className="level-label">{course.level}</span>
+          <span><Clock3 size={14} /> {t(course.duration)}</span>
+          <span>{course.lessons} {t("lessons")}</span>
+          <span className="level-label">{t(course.level)}</span>
         </div>
         {progress && <div className="course-progress">
-          <div className="progress-meta"><span>Your progress</span><span>{course.progress}%</span></div>
+          <div className="progress-meta"><span>{t("Your progress")}</span><span>{course.progress}%</span></div>
           <div className="progress-track" role="progressbar" aria-valuenow={course.progress} aria-valuemin="0" aria-valuemax="100">
-            <span style={{ width: `${course.progress}%` }} />
+            <span style={{
+            width: `${course.progress}%`
+          }} />
           </div>
         </div>}
       </div>
-    </article>
-  );
+    </article>;
 }
-
-function CourseDialog({ course, onClose, userId, roomEnabled, messages, messageError, onSendMessage }) {
+function CourseDialog({
+  course,
+  onClose,
+  userId,
+  roomEnabled,
+  messages,
+  messageError,
+  onSendMessage
+}) {
+  const {
+    t
+  } = useLanguage();
   const dialogRef = useRef(null);
   const closeButtonRef = useRef(null);
   const onCloseRef = useRef(onClose);
   const courseId = course?.id;
   onCloseRef.current = onClose;
-
   useEffect(() => {
     if (!courseId) return undefined;
     const previousFocus = document.activeElement;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     closeButtonRef.current?.focus();
-
-    const handleKeyDown = (event) => {
+    const handleKeyDown = event => {
       if (event.key === 'Escape') {
         event.preventDefault();
         onCloseRef.current();
         return;
       }
       if (event.key !== 'Tab' || !dialogRef.current) return;
-      const focusable = [...dialogRef.current.querySelectorAll(
-        'button:not([disabled]), a[href], input:not([disabled]), [tabindex]:not([tabindex="-1"])',
-      )].filter((element) => element.getClientRects().length > 0);
+      const focusable = [...dialogRef.current.querySelectorAll('button:not([disabled]), a[href], input:not([disabled]), [tabindex]:not([tabindex="-1"])')].filter(element => element.getClientRects().length > 0);
       if (!focusable.length) return;
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
@@ -247,7 +255,6 @@ function CourseDialog({ course, onClose, userId, roomEnabled, messages, messageE
         first.focus();
       }
     };
-
     document.addEventListener('keydown', handleKeyDown);
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
@@ -255,9 +262,8 @@ function CourseDialog({ course, onClose, userId, roomEnabled, messages, messageE
       if (previousFocus instanceof HTMLElement && previousFocus.isConnected) previousFocus.focus();
     };
   }, [courseId]);
-
   if (!course) return null;
-  const submit = (event) => {
+  const submit = event => {
     event.preventDefault();
     const form = event.currentTarget;
     const input = new FormData(form).get('message');
@@ -266,63 +272,77 @@ function CourseDialog({ course, onClose, userId, roomEnabled, messages, messageE
       form.reset();
     }
   };
-  return (
-    <div className="dialog-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+  return <div className="dialog-backdrop" role="presentation" onMouseDown={event => event.target === event.currentTarget && onClose()}>
       <section ref={dialogRef} className="course-dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title" aria-describedby="dialog-description" tabIndex={-1}>
-        <button ref={closeButtonRef} className="dialog-close icon-button" onClick={onClose} aria-label="Close course details"><X size={19} /></button>
+        <button ref={closeButtonRef} className="dialog-close icon-button" onClick={onClose} aria-label={t("Close course details")}><X size={19} /></button>
         <CourseArt course={course} />
         <div className="dialog-copy">
-          <div className="course-category">{course.category} <span className="meta-dot" /> {course.level}</div>
+          <div className="course-category">{t(course.category)} <span className="meta-dot" /> {t(course.level)}</div>
           <h2 id="dialog-title">{course.title}</h2>
           <p id="dialog-description">{course.description}</p>
           <div className="dialog-instructor">
-            <span className={`avatar avatar-${course.accent}`} aria-hidden="true">{initials(course.instructor)}</span>
-            <div><strong>{course.instructor}</strong><span>Course instructor</span></div>
+            <span className={t(`avatar avatar-${course.accent}`)} aria-hidden="true">{initials(course.instructor)}</span>
+            <div><strong>{course.instructor}</strong><span>{t("Course instructor")}</span></div>
           </div>
-          <div className="dialog-stats"><span><Clock3 size={16} /> {course.duration}</span><span><BookOpen size={16} /> {course.lessons} lessons</span></div>
-          {roomEnabled ? <section className="classroom-panel" aria-label="Course classroom">
-            <div className="section-heading"><div><span className="section-kicker">COURSE ROOM</span><h3>Classroom</h3></div></div>
+          <p className="course-language">{t(courseLanguageKey(course.languages))}</p><div className="dialog-stats"><span><Clock3 size={16} /> {t(course.duration)}</span><span><BookOpen size={16} /> {course.lessons} {t("lessons")}</span></div>
+          {roomEnabled ? <section className="classroom-panel" aria-label={t("Course classroom")}>
+            <div className="section-heading"><div><span className="section-kicker">{t("COURSE ROOM")}</span><h3>{t("Classroom")}</h3></div></div>
             <div className="classroom-messages" aria-live="polite">
-              {messages.length ? messages.map((message) => <article className="classroom-message" key={message.id}>
-                <div className="classroom-message-meta"><strong>{message.sender_id === userId ? 'You' : 'Class member'}</strong><time dateTime={message.created_at}>{new Date(message.created_at).toLocaleString()}</time></div>
+              {messages.length ? messages.map(message => <article className="classroom-message" key={message.id}>
+                <div className="classroom-message-meta"><strong>{t(message.sender_id === userId ? 'You' : 'Class member')}</strong><time dateTime={message.created_at}>{new Date(message.created_at).toLocaleString()}</time></div>
                 <p>{message.body}</p>
-              </article>) : <p className="classroom-empty">No messages in this classroom yet.</p>}
+              </article>) : <p className="classroom-empty">{t("No messages in this classroom yet.")}</p>}
             </div>
-            {messageError && <p className="auth-error" role="alert">{messageError}</p>}
+            {messageError && <p className="auth-error" role="alert">{t(messageError)}</p>}
             <form className="classroom-composer" onSubmit={submit}>
-              <label className="visually-hidden" htmlFor="classroom-message">Message</label>
-              <input id="classroom-message" name="message" maxLength="4000" placeholder="Write a message…" required />
-              <button className="button button-dark" type="submit">Send</button>
+              <label className="visually-hidden" htmlFor="classroom-message">{t("Message")}</label>
+              <input id="classroom-message" name="message" maxLength="4000" placeholder={t("Write a message…")} required />
+              <button className="button button-dark" type="submit">{t("Send")}</button>
             </form>
-          </section> : <p className="classroom-restricted">Classroom access is available to enrolled learners.</p>}
-          <button className="button button-outline dialog-action" onClick={onClose}>Close course details</button>
+          </section> : <p className="classroom-restricted">{t("Classroom access is available to enrolled learners.")}</p>}
+          <button className="button button-outline dialog-action" onClick={onClose}>{t("Close course details")}</button>
         </div>
       </section>
-    </div>
-  );
+    </div>;
 }
-
-function EmptyState({ title, detail, action, onAction }) {
-  return (
-    <div className="empty-state">
+function EmptyState({
+  title,
+  detail,
+  action,
+  onAction
+}) {
+  const {
+    t
+  } = useLanguage();
+  return <div className="empty-state">
       <div className="empty-icon"><BookOpen size={21} /></div>
-      <h3>{title}</h3>
-      <p>{detail}</p>
-      {action && <button className="button button-outline" onClick={onAction}>{action}</button>}
-    </div>
-  );
+      <h3>{t(title)}</h3>
+      <p>{t(detail)}</p>
+      {action && <button className="button button-outline" onClick={onAction}>{t(action)}</button>}
+    </div>;
 }
-
-function Metric({ label, value, suffix, icon: Icon }) {
-  return (
-    <article className="stat-card">
-      <div className="stat-label">{label}<span className="stat-icon stat-icon-violet"><Icon size={15} /></span></div>
-      <div className="stat-value">{value}<span>{suffix}</span></div>
-    </article>
-  );
+function Metric({
+  label,
+  value,
+  suffix,
+  icon: Icon
+}) {
+  const {
+    t
+  } = useLanguage();
+  return <article className="stat-card">
+      <div className="stat-label">{t(label)}<span className="stat-icon stat-icon-violet"><Icon size={15} /></span></div>
+      <div className="stat-value">{value}<span>{t(suffix)}</span></div>
+    </article>;
 }
-
 function LearnerApp() {
+  const {
+    locale
+  } = useLanguage();
+  const [contentLanguage, setContentLanguage] = useState('all');
+  const {
+    t
+  } = useLanguage();
   const [authStatus, setAuthStatus] = useState('loading');
   const [currentUser, setCurrentUser] = useState(null);
   const [authError, setAuthError] = useState('');
@@ -348,7 +368,6 @@ function LearnerApp() {
   const selectedCourseRef = useRef(null);
   const mobileMenuButtonRef = useRef(null);
   selectedCourseRef.current = selectedCourse?.id || null;
-
   useEffect(() => {
     if (authStatus === 'signed-in') return;
     setDashboard(null);
@@ -358,11 +377,12 @@ function LearnerApp() {
     setSelectedCourse(null);
     setNotice('');
   }, [authStatus]);
-
-  const restoreSession = async (signal) => {
+  const restoreSession = async signal => {
     setAuthError('');
     try {
-      const user = await getSession({ signal });
+      const user = await getSession({
+        signal
+      });
       if (!signal?.aborted) {
         setCurrentUser(user);
         setAuthStatus('signed-in');
@@ -375,7 +395,9 @@ function LearnerApp() {
         return;
       }
       try {
-        const user = await refreshSession({ signal });
+        const user = await refreshSession({
+          signal
+        });
         if (!signal?.aborted) {
           setCurrentUser(user);
           setAuthStatus('signed-in');
@@ -388,14 +410,11 @@ function LearnerApp() {
       }
     }
   };
-
   useEffect(() => {
-    document.title = `${appConfig.name} — Learning, at your pace`;
     const controller = new AbortController();
     restoreSession(controller.signal);
     return () => controller.abort();
   }, []);
-
   const signIn = async (email, password) => {
     setAuthBusy(true);
     setAuthError('');
@@ -417,7 +436,6 @@ function LearnerApp() {
       setAuthBusy(false);
     }
   };
-
   const signOut = async () => {
     realtimeRef.current?.close();
     realtimeRef.current = null;
@@ -440,7 +458,6 @@ function LearnerApp() {
       setAuthStatus('signed-out');
     }
   };
-
   useEffect(() => {
     if (authStatus !== 'signed-in') return undefined;
     const controller = new AbortController();
@@ -448,76 +465,78 @@ function LearnerApp() {
     setDashboardError('');
     const loadDashboard = async () => {
       try {
-        return await getDashboard({ signal: controller.signal });
+        return await getDashboard({
+          signal: controller.signal
+        });
       } catch (error) {
         if (!isUnauthorized(error)) throw error;
-        await refreshSession({ signal: controller.signal });
-        return getDashboard({ signal: controller.signal });
+        await refreshSession({
+          signal: controller.signal
+        });
+        return getDashboard({
+          signal: controller.signal
+        });
       }
     };
-    loadDashboard()
-      .then((data) => {
-        setDashboard(data);
-        setCurrentUser((user) => ({ ...user, ...data.learner }));
-      })
-      .catch((error) => {
-        if (!controller.signal.aborted) {
-          if (isUnauthorized(error)) {
-            setCurrentUser(null);
-            setAuthStatus('signed-out');
-          } else {
-            setDashboardError(error.message);
-          }
+    loadDashboard().then(data => {
+      setDashboard(data);
+      setCurrentUser(user => ({
+        ...user,
+        ...data.learner
+      }));
+    }).catch(error => {
+      if (!controller.signal.aborted) {
+        if (isUnauthorized(error)) {
+          setCurrentUser(null);
+          setAuthStatus('signed-out');
+        } else {
+          setDashboardError(error.message);
         }
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setDashboardLoading(false);
-      });
+      }
+    }).finally(() => {
+      if (!controller.signal.aborted) setDashboardLoading(false);
+    });
     return () => controller.abort();
   }, [authStatus, dashboardReload]);
-
   useEffect(() => {
     if (authStatus !== 'signed-in') return undefined;
     const controller = new AbortController();
     setCatalogLoading(true);
     setCatalogError('');
-    getCourses({ signal: controller.signal })
-      .then(setCatalog)
-      .catch((error) => {
-        if (!controller.signal.aborted) setCatalogError(error.message);
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setCatalogLoading(false);
-      });
+    getCourses({
+      signal: controller.signal
+    }).then(setCatalog).catch(error => {
+      if (!controller.signal.aborted) setCatalogError(error.message);
+    }).finally(() => {
+      if (!controller.signal.aborted) setCatalogLoading(false);
+    });
     return () => controller.abort();
   }, [authStatus, catalogReload]);
-
   useEffect(() => {
     if (authStatus !== 'signed-in') return undefined;
     const realtime = openRealtimeChannels({
-      onNotification: (notification) => {
-        setNotifications((current) => mergeNotifications(current, [notification]));
+      onNotification: notification => {
+        setNotifications(current => mergeNotifications(current, [notification]));
         setNotice(typeof notification?.body === 'string' ? notification.body : 'A new notification is available.');
       },
-      onNotifications: (items) => setNotifications((current) => mergeNotifications(current, items)),
-      onNotificationRead: (event) => {
-        setNotifications((current) => current.map((notification) => notification.id === event?.id
-          ? { ...notification, read_at: event.readAt }
-          : notification));
+      onNotifications: items => setNotifications(current => mergeNotifications(current, items)),
+      onNotificationRead: event => {
+        setNotifications(current => current.map(notification => notification.id === event?.id ? {
+          ...notification,
+          read_at: event.readAt
+        } : notification));
       },
       onError: () => setNotice('Realtime connection is unavailable. Live updates will resume when reconnected.'),
       onClassroomHistory: (courseId, messages) => {
         if (courseId === selectedCourseRef.current) {
-          setClassroomMessages((current) => mergeMessages(current, messages));
+          setClassroomMessages(current => mergeMessages(current, messages));
         }
       },
-      onRoomError: (reason) => setClassroomError(reason === 'FORBIDDEN'
-        ? 'This classroom is only available to enrolled learners.'
-        : 'The classroom could not load. Check your connection and try again.'),
+      onRoomError: reason => setClassroomError(reason === 'FORBIDDEN' ? 'This classroom is only available to enrolled learners.' : 'The classroom could not load. Check your connection and try again.')
     });
-    const removeMessageListener = realtime.onClassroomMessage((message) => {
+    const removeMessageListener = realtime.onClassroomMessage(message => {
       if (message?.course_id === selectedCourseRef.current) {
-        setClassroomMessages((current) => mergeMessages(current, [message]));
+        setClassroomMessages(current => mergeMessages(current, [message]));
       }
     });
     realtimeRef.current = realtime;
@@ -527,130 +546,122 @@ function LearnerApp() {
       realtimeRef.current = null;
     };
   }, [authStatus]);
-
   useEffect(() => {
     setClassroomMessages([]);
     setClassroomError('');
-    const hasEnrollment = dashboard?.courses.some((course) => course.id === selectedCourse?.id);
+    const hasEnrollment = dashboard?.courses.some(course => course.id === selectedCourse?.id);
     realtimeRef.current?.setCourse(hasEnrollment ? selectedCourse.id : null);
     return () => realtimeRef.current?.setCourse(null);
   }, [selectedCourse?.id, authStatus, dashboard]);
-
   useEffect(() => {
     if (!notice) return undefined;
     const timeout = window.setTimeout(() => setNotice(''), 8000);
     return () => window.clearTimeout(timeout);
   }, [notice]);
-
-  const activeCourses = dashboard?.courses || [];
-  const categories = useMemo(() => ['All courses', ...new Set(catalog.map((course) => course.category))], [catalog]);
-  const filteredCatalog = useMemo(() => catalog.filter((course) => {
+  const activeCourses = (dashboard?.courses || []).map(course => localizeCourse(course, locale));
+  const categories = useMemo(() => ['All courses', ...new Set(catalog.map(course => course.category))], [catalog]);
+  const filteredCatalog = useMemo(() => catalog.map(course => localizeCourse(course, locale)).filter(course => {
     const query = search.trim().toLowerCase();
     const matchesSearch = !query || `${course.title} ${course.instructor} ${course.category}`.toLowerCase().includes(query);
     const matchesCategory = activeCategory === 'All courses' || course.category === activeCategory;
-    return matchesSearch && matchesCategory;
-  }), [activeCategory, catalog, search]);
-  const displayedCourses = activeNav === 'My courses' ? activeCourses : filteredCatalog;
+    return matchesSearch && matchesCategory && matchesCourseLanguage(course, contentLanguage);
+  }), [activeCategory, catalog, search, locale, contentLanguage]);
+  const displayedCourses = activeNav === 'My courses' ? activeCourses.filter(course => matchesCourseLanguage(course, contentLanguage)) : filteredCatalog;
   const displayedError = activeNav === 'My courses' ? dashboardError : catalogError;
   const displayedLoading = activeNav === 'My courses' ? dashboardLoading : catalogLoading;
-  const displayName = dashboard?.learner?.displayName || currentUser?.displayName || currentUser?.email || '';
-  const dateLabel = new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
-    .format(new Date()).toUpperCase();
-  const unreadNotifications = notifications.filter((notification) => !notification.read_at);
-
+  const displayName = dashboard?.learner?.displayName || t(currentUser?.displayName) || currentUser?.email || '';
+  const dateLabel = new Intl.DateTimeFormat(locale === 'id' ? 'id-ID' : 'en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric'
+  }).format(new Date()).toUpperCase();
+  const unreadNotifications = notifications.filter(notification => !notification.read_at);
   const sendClassroomMessage = (courseId, body) => {
     setClassroomError('');
-    realtimeRef.current?.sendClassroomMessage(courseId, body, (result) => {
+    realtimeRef.current?.sendClassroomMessage(courseId, body, result => {
       if (!result?.ok) setClassroomError(result?.error === 'FORBIDDEN' ? 'You no longer have access to this classroom.' : 'Message could not be sent. Please try again.');
     });
   };
-
   if (authStatus === 'loading' || authStatus === 'signing-out') {
-    return <main className="auth-screen"><div className="auth-card"><p role="status">{authStatus === 'loading' ? 'Checking your session…' : 'Signing out…'}</p><p>The free demo API may take up to a minute to wake up.</p><a className="auth-home" href="#">Back to public site</a></div></main>;
+    return <main className="auth-screen"><div className="auth-card"><p role="status">{t(authStatus === 'loading' ? 'Checking your session…' : 'Signing out…')}</p><p>{t("The free demo API may take up to a minute to wake up.")}</p><a className="auth-home" href="#">{t("Back to public site")}</a></div></main>;
   }
   if (authStatus !== 'signed-in') {
     return <LoginScreen onLogin={signIn} error={authError || (authStatus === 'error' ? 'Unable to check your session. Try signing in again.' : '')} busy={authBusy} />;
   }
-
-  return (
-    <div className="app-shell">
-      <a className="skip-link" href="#main-content" inert={menuOpen || Boolean(selectedCourse)} aria-hidden={menuOpen || selectedCourse ? 'true' : undefined}>Skip to course content</a>
+  return <div className="app-shell">
+      <a className="skip-link" href="#main-content" inert={menuOpen || Boolean(selectedCourse)} aria-hidden={menuOpen || selectedCourse ? 'true' : undefined}>{t("Skip to course content")}</a>
       <Sidebar active={activeNav} onNavigate={setActiveNav} open={menuOpen} onClose={() => setMenuOpen(false)} user={currentUser} onLogout={signOut} modalOpen={Boolean(selectedCourse)} />
       <main className="main-area" inert={menuOpen || Boolean(selectedCourse)} aria-hidden={menuOpen || selectedCourse ? 'true' : undefined}>
         <header className="topbar">
-          <button ref={mobileMenuButtonRef} className="mobile-menu icon-button" onClick={() => setMenuOpen(true)} aria-label="Open navigation menu" aria-expanded={menuOpen} aria-controls="learner-sidebar"><Menu size={20} /></button>
-          <div className="breadcrumb"><span>My space</span><span className="breadcrumb-slash" aria-hidden="true">/</span><strong>{activeNav}</strong></div>
-          <div className="topbar-actions">
-            <label className="global-search"><Search size={16} /><input aria-label="Search courses" placeholder="Search…" value={search} onChange={(event) => { setSearch(event.target.value); setActiveNav('Explore courses'); }} /></label>
-            <button className="icon-button topbar-help" aria-label="Help" title="Help"><CircleHelp size={19} /></button>
-            <button className="notification-button icon-button" aria-label={`Notifications${unreadNotifications.length ? `, ${unreadNotifications.length} unread` : ''}`} onClick={() => {
-              const notification = unreadNotifications[0];
-              if (notification) {
-                setNotice(notification.body || notification.title || 'Notification marked as read.');
-                realtimeRef.current?.markNotificationRead(notification.id, (result) => {
-                  if (!result?.ok) setNotice('Could not mark the notification as read.');
-                });
-              } else {
-                setNotice('You’re all caught up on notifications');
-              }
-            }}><Bell size={19} />{unreadNotifications.length > 0 && <i />}</button>
+          <button ref={mobileMenuButtonRef} className="mobile-menu icon-button" onClick={() => setMenuOpen(true)} aria-label={t("Open navigation menu")} aria-expanded={menuOpen} aria-controls="learner-sidebar"><Menu size={20} /></button>
+          <div className="breadcrumb"><span>{t("My space")}</span><span className="breadcrumb-slash" aria-hidden="true">/</span><strong>{t(activeNav)}</strong></div>
+          <div className="topbar-actions"><LanguageSwitcher />
+            <label className="global-search"><Search size={16} /><input aria-label={t("Search courses")} placeholder={t("Search…")} value={search} onChange={event => {
+              setSearch(event.target.value);
+              setActiveNav('Explore courses');
+            }} /></label>
+            <button className="icon-button topbar-help" aria-label={t("Help")} title={t("Help")}><CircleHelp size={19} /></button>
+            <button className="notification-button icon-button" aria-label={t(`Notifications${unreadNotifications.length ? `, ${unreadNotifications.length} unread` : ''}`)} onClick={() => {
+            const notification = unreadNotifications[0];
+            if (notification) {
+              setNotice(notification.body || notification.title || 'Notification marked as read.');
+              realtimeRef.current?.markNotificationRead(notification.id, result => {
+                if (!result?.ok) setNotice('Could not mark the notification as read.');
+              });
+            } else {
+              setNotice('You’re all caught up on notifications');
+            }
+          }}><Bell size={19} />{unreadNotifications.length > 0 && <i />}</button>
             <div className="topbar-divider" />
-            <button className="topbar-profile" onClick={signOut} title="Sign out" aria-label="Sign out">
-              <span className="avatar avatar-profile" aria-hidden="true">{initials(currentUser?.displayName || currentUser?.email)}</span><ChevronDown size={15} />
+            <button className="topbar-profile" onClick={signOut} title={t("Sign out")} aria-label={t("Sign out")}>
+              <span className="avatar avatar-profile" aria-hidden="true">{initials(t(currentUser?.displayName) || currentUser?.email)}</span><ChevronDown size={15} />
             </button>
           </div>
         </header>
 
         <div id="main-content" className="page-content" tabIndex={-1}>
-          {currentUser?.email === demoAccount.email && <p className="demo-workspace-notice">Shared learner demo · Courses and progress are fictional. Classroom messages are visible to other demo visitors. <a href="#">Back to public site</a></p>}
+          {currentUser?.email === demoAccount.email && <p className="demo-workspace-notice">{t("Shared learner demo · Courses and progress are fictional. Classroom messages are visible to other demo visitors.")} <a href="#">{t("Back to public site")}</a></p>}
           <section className="welcome-row">
             <div><div className="date-kicker"><span className="live-dot" /> {dateLabel}</div>
-              <h1>{activeNav === 'Overview' ? `Welcome, ${displayName}` : activeNav}<span className="heading-wave" aria-hidden="true">✳</span></h1>
-              <p className="welcome-subtitle">Your learning, in one place.</p>
+              <h1>{activeNav === 'Overview' ? t(`Welcome, ${displayName}`) : t(activeNav)}<span className="heading-wave" aria-hidden="true">✳</span></h1>
+              <p className="welcome-subtitle">{t("Your learning, in one place.")}</p>
             </div>
-            <button className="button button-outline plan-button" onClick={() => setActiveNav('My courses')}><CalendarDays size={16} /> View my courses</button>
+            <button className="button button-outline plan-button" onClick={() => setActiveNav('My courses')}><CalendarDays size={16} /> {t("View my courses")}</button>
           </section>
 
           {activeNav === 'Overview' && <>
-            {dashboardError && <div className="api-notice" role="alert"><span>Dashboard could not load: {dashboardError}</span><button className="text-link" onClick={() => setDashboardReload((value) => value + 1)}>Retry</button></div>}
-            {dashboardLoading ? <p className="catalog-status" role="status">Loading your dashboard…</p> : dashboard && <>
-              <section className="stats-grid" aria-label="Learning summary">
+            {dashboardError && <div className="api-notice" role="alert"><span>{t("Dashboard could not load:")} {dashboardError}</span><button className="text-link" onClick={() => setDashboardReload(value => value + 1)}>{t("Retry")}</button></div>}
+            {dashboardLoading ? <p className="catalog-status" role="status">{t("Loading your dashboard…")}</p> : dashboard && <>
+              <section className="stats-grid" aria-label={t("Learning summary")}>
                 <Metric label="HOURS LEARNED" value={dashboard.stats.hoursLearned} suffix="hrs" icon={Clock3} />
                 <Metric label="COURSES IN PROGRESS" value={dashboard.stats.coursesInProgress} suffix="courses" icon={BookOpen} />
                 <Metric label="CERTIFICATES" value={dashboard.stats.certificates} suffix="earned" icon={GraduationCap} />
               </section>
               <section className="continue-section">
-                <div className="section-heading"><div><span className="section-kicker">YOUR LEARNING</span><h2>Continue a course</h2></div>
-                  {activeCourses.length > 0 && <button className="text-link" onClick={() => setActiveNav('My courses')}>View all courses <ArrowRight size={15} /></button>}
+                <div className="section-heading"><div><span className="section-kicker">{t("YOUR LEARNING")}</span><h2>{t("Continue a course")}</h2></div>
+                  {activeCourses.length > 0 && <button className="text-link" onClick={() => setActiveNav('My courses')}>{t("View all courses")} <ArrowRight size={15} /></button>}
                 </div>
-                {dashboardLoading ? <p className="catalog-status" role="status">Loading enrolled courses…</p>
-                  : activeCourses.length ? <div className="course-grid">{activeCourses.slice(0, 2).map((course) => <CourseCard key={course.id} course={course} progress onOpen={setSelectedCourse} />)}</div>
-                    : <EmptyState title="Your learning starts here" detail="You have no active courses yet. Explore the catalog to find a course that fits your goals." action="Explore courses" onAction={() => setActiveNav('Explore courses')} />}
+                {dashboardLoading ? <p className="catalog-status" role="status">{t("Loading enrolled courses…")}</p> : activeCourses.length ? <div className="course-grid">{activeCourses.slice(0, 2).map(course => <CourseCard key={course.id} course={course} progress onOpen={setSelectedCourse} />)}</div> : <EmptyState title={t("Your learning starts here")} detail="You have no active courses yet. Explore the catalog to find a course that fits your goals." action="Explore courses" onAction={() => setActiveNav('Explore courses')} />}
               </section>
             </>}
           </>}
 
           {activeNav !== 'Overview' && <section className="catalog-section">
-            <div className="section-heading catalog-heading"><div><span className="section-kicker">{activeNav === 'My courses' ? 'YOUR LEARNING' : 'COURSE CATALOG'}</span><h2>{activeNav === 'My courses' ? 'Enrolled courses' : 'Find a course'}</h2></div></div>
-            {activeNav === 'Explore courses' && <div className="catalog-toolbar"><div className="category-tabs" role="group" aria-label="Filter courses by category">{categories.map((category) => <button key={category} type="button" aria-pressed={activeCategory === category} className={`category-tab ${activeCategory === category ? 'category-active' : ''}`} onClick={() => setActiveCategory(category)}>{category}</button>)}</div></div>}
-            {displayedError && <div className="api-notice" role="alert"><span>Courses could not load: {displayedError}</span><button className="text-link" onClick={() => activeNav === 'My courses' ? setDashboardReload((value) => value + 1) : setCatalogReload((value) => value + 1)}>Retry</button></div>}
-            {displayedLoading ? <p className="catalog-status" role="status">Loading {activeNav === 'My courses' ? 'your courses' : 'the catalog'}…</p>
-              : displayedCourses.length ? <div className="course-grid">{displayedCourses.map((course) => <CourseCard key={course.id} course={course} progress={activeNav === 'My courses'} onOpen={setSelectedCourse} />)}</div>
-                : <EmptyState title={activeNav === 'My courses' ? 'No courses in your learning list' : 'No published courses yet'} detail={activeNav === 'My courses' ? 'When you enroll in a course, it will appear here.' : 'The catalog will show courses once they are published.'} action={activeNav === 'My courses' ? 'Explore courses' : undefined} onAction={() => setActiveNav('Explore courses')} />}
+            <div className="section-heading catalog-heading"><div><span className="section-kicker">{t(activeNav === 'My courses' ? 'YOUR LEARNING' : 'COURSE CATALOG')}</span><h2>{t(activeNav === 'My courses' ? 'Enrolled courses' : 'Find a course')}</h2></div></div>
+            <div className="catalog-toolbar"><label className="course-language-filter">{t('Course language')}<select aria-label={t('Course language')} value={contentLanguage} onChange={event => setContentLanguage(event.target.value)}>{[['all', 'All languages'], ['id', 'Indonesian only'], ['en', 'English only'], ['both', 'Both languages']].map(([value, label]) => <option key={value} value={value}>{t(label)}</option>)}</select></label><div className="category-tabs" role="group" aria-label={t("Filter courses by category")}>{categories.map(category => <button key={category} type="button" aria-pressed={activeCategory === category} className={t(`category-tab ${activeCategory === category ? 'category-active' : ''}`)} onClick={() => setActiveCategory(category)}>{t(category)}</button>)}</div></div>
+            {displayedError && <div className="api-notice" role="alert"><span>{t("Courses could not load:")} {displayedError}</span><button className="text-link" onClick={() => activeNav === 'My courses' ? setDashboardReload(value => value + 1) : setCatalogReload(value => value + 1)}>{t("Retry")}</button></div>}
+            {displayedLoading ? <p className="catalog-status" role="status">{t("Loading")} {t(activeNav === 'My courses' ? 'your courses' : 'the catalog')}…</p> : displayedCourses.length ? <div className="course-grid">{displayedCourses.map(course => <CourseCard key={course.id} course={course} progress={activeNav === 'My courses'} onOpen={setSelectedCourse} />)}</div> : <EmptyState title={t(activeNav === 'My courses' ? 'No courses in your learning list' : 'No published courses yet')} detail={t(activeNav === 'My courses' ? 'When you enroll in a course, it will appear here.' : 'The catalog will show courses once they are published.')} action={activeNav === 'My courses' ? 'Explore courses' : undefined} onAction={() => setActiveNav('Explore courses')} />}
           </section>}
 
-          <footer className="page-footer"><span>© {new Date().getFullYear()} {appConfig.name}</span><span>Learning at your own pace.</span><a href="https://github.com/johansantri/jakija" target="_blank" rel="noreferrer">Creator: JakIja</a></footer>
+          <footer className="page-footer"><span>© {new Date().getFullYear()} {appConfig.name}</span><span>{t("Learning at your own pace.")}</span><a href="https://github.com/johansantri/jakija" target="_blank" rel="noreferrer">{t("Creator: JakIja")}</a></footer>
         </div>
       </main>
-      <CourseDialog course={selectedCourse} onClose={() => setSelectedCourse(null)} userId={currentUser?.id}
-        roomEnabled={activeCourses.some((course) => course.id === selectedCourse?.id)} messages={classroomMessages}
-        messageError={classroomError} onSendMessage={sendClassroomMessage} />
-      {notice && <div className="toast" role="status" inert={menuOpen || Boolean(selectedCourse)} aria-hidden={menuOpen || selectedCourse ? 'true' : undefined}>{notice}<button onClick={() => setNotice('')} aria-label="Dismiss notification"><X size={14} /></button></div>}
-    </div>
-  );
+      <CourseDialog course={selectedCourse ? localizeCourse(selectedCourse, locale) : null} onClose={() => setSelectedCourse(null)} userId={currentUser?.id} roomEnabled={activeCourses.some(course => course.id === selectedCourse?.id)} messages={classroomMessages} messageError={classroomError} onSendMessage={sendClassroomMessage} />
+      {notice && <div className="toast" role="status" inert={menuOpen || Boolean(selectedCourse)} aria-hidden={menuOpen || selectedCourse ? 'true' : undefined}>{t(notice)}<button onClick={() => setNotice('')} aria-label={t("Dismiss notification")}><X size={14} /></button></div>}
+    </div>;
 }
-
-export default function App() {
+function RoutedApp() {
   const [route, setRoute] = useState(() => window.location.hash);
   useEffect(() => {
     const updateRoute = () => setRoute(window.location.hash);
@@ -658,4 +669,7 @@ export default function App() {
     return () => window.removeEventListener('hashchange', updateRoute);
   }, []);
   return ['#signin', '#signin-demo', '#app', '#main-content'].includes(route) ? <LearnerApp /> : <Landing />;
+}
+export default function App() {
+  return <LanguageProvider><RoutedApp /></LanguageProvider>;
 }

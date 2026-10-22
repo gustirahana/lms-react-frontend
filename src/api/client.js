@@ -61,6 +61,21 @@ export async function request(path, { signal, ...options } = {}) {
   }
 }
 
+function validateCourseLanguages(course) {
+  if (course.languages !== undefined && (!Array.isArray(course.languages)
+    || course.languages.length < 1 || course.languages.length > 2
+    || new Set(course.languages).size !== course.languages.length
+    || course.languages.some(language => !['id', 'en'].includes(language)))) {
+    throw new ApiError('The server returned invalid course language availability.');
+  }
+  if (course.translations !== undefined && (!course.translations || Array.isArray(course.translations)
+    || typeof course.translations !== 'object'
+    || Object.entries(course.translations).some(([language, copy]) => !['id', 'en'].includes(language)
+      || !copy || typeof copy.title !== 'string' || typeof copy.description !== 'string'))) {
+    throw new ApiError('The server returned invalid course translations.');
+  }
+}
+
 export async function getCourses({ signal } = {}) {
   const data = await request('/api/courses', { signal });
   if (!Array.isArray(data)) {
@@ -86,6 +101,7 @@ export async function getCourses({ signal } = {}) {
     if (!valid) {
       throw new ApiError('The server returned course data with missing or invalid fields.');
     }
+    validateCourseLanguages(course);
     return course;
   });
 }
@@ -115,6 +131,7 @@ export async function getDashboard({ signal } = {}) {
       || typeof course.description !== 'string') {
       throw new ApiError('The server returned dashboard course data with invalid fields.');
     }
+    validateCourseLanguages(course);
     return course;
   });
   return { learner, stats, courses };

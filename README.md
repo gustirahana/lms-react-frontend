@@ -72,7 +72,7 @@ The root page is a public landing with sample course previews and upstream attri
 - Demo email: `learner.demo@jakija.example`
 - Demo password: `JakIja-Learn-Demo-2026!`
 
-These are intentionally public credentials for a dedicated learner account. The private instructor password, Supabase server secret, and encryption keys are never bundled. Demo classroom activity is shared; visitors should use fictional content. The three courses and progress rows are fictional interface samples, not complete instructional materials.
+These are intentionally public credentials for a dedicated learner account. The private instructor password, Supabase server secret, and encryption keys are never bundled. Demo classroom activity is shared; visitors should use fictional content. The courses and progress rows are fictional interface samples, not complete instructional materials.
 
 The tracked `.env.production` contains public API/socket origins for `https://lms-backend-7ass.onrender.com`. Cloudflare build environment variables can override those origins. API requests allow up to 60 seconds for the free Render host to wake. Browser restrictions on cookies across `pages.dev` and `onrender.com` still depend on the visitor's browser; use frontend/API subdomains on one site for the most reliable session behavior.
 
@@ -83,3 +83,11 @@ Provision or restore the sample account/data from the backend's `scripts/provisi
 The public landing adapts the photographic hero, navy/white visual hierarchy, and course-led structure observed at [WPLMS Demos](https://demos.wplms.io/) using REA. It includes category filters, local course search with empty/reset states, and public course previews with keyboard focus trapping and Escape dismissal. The existing learner demo links and upstream JakIja credit remain in place.
 
 Four original AI-generated images are served as compressed WebP files from `public/images/`. The page does not reuse the reference's photographs, endorsements, brand assets, or user counts. See [the reference evidence and asset notes](docs/landing-reference.md).
+
+## Indonesian and English
+
+The language selector is available on the public page, sign-in form, and learner header. It remembers an explicit `en` or `id` choice in browser storage; changing the interface does not change a course's content availability. The document language and title follow the selected locale.
+
+The demo now has nine courses, with three records in each availability group: Indonesian-only, English-only, and bilingual. Public and learner catalogs have an exclusive course-language filter. Bilingual course titles/descriptions use the active supported translation, while single-language course copy stays in its original language. These are fictional course metadata samples; complete teaching materials are not included.
+
+`src/data/demo-courses.json` mirrors the backend's `demo/courses.json`. Keep them aligned when updating the seeded showcase. API responses carry `languages` and `translations`; the frontend validates both fields when provided.
