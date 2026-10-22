@@ -4,7 +4,7 @@ import { demoAccount, sampleCourses } from './demo.js';
 import './landing.css';
 
 const artwork = {
-  Design: '/images/course-design.webp',
+  Design: '/images/course-design-workshop.webp',
   Development: '/images/course-react.webp',
   Backend: '/images/course-backend.webp',
 };
