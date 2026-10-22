@@ -77,3 +77,9 @@ These are intentionally public credentials for a dedicated learner account. The 
 The tracked `.env.production` contains public API/socket origins for `https://lms-backend-7ass.onrender.com`. Cloudflare build environment variables can override those origins. API requests allow up to 60 seconds for the free Render host to wake. Browser restrictions on cookies across `pages.dev` and `onrender.com` still depend on the visitor's browser; use frontend/API subdomains on one site for the most reliable session behavior.
 
 Provision or restore the sample account/data from the backend's `scripts/provision-demo.mjs` using server-side environment variables. The script only upserts its fixed sample IDs; it does not delete existing data.
+
+### WPLMS-inspired public landing
+
+The public landing adapts the photographic hero, navy/white visual hierarchy, and course-led structure observed at [WPLMS Demos](https://demos.wplms.io/) using REA. It includes category filters, local course search with empty/reset states, and public course previews with keyboard focus trapping and Escape dismissal. The existing learner demo links and upstream JakIja credit remain in place.
+
+Four original AI-generated images are served as compressed WebP files from `public/images/` (approximately 165 KB combined). The page does not reuse the reference's photographs, endorsements, brand assets, or user counts. See [the reference evidence and asset notes](docs/landing-reference.md).
