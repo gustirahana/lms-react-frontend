@@ -64,3 +64,16 @@ GitHub Actions runs `npm ci`, `npm audit --audit-level=high`, ESLint, the auth-f
 - Browser checks covered the dashboard at 1440×900 and the dashboard and course dialog at 390×844 and 320×720. At both compact sizes, the search field remains available and document width matched the viewport content width without horizontal overflow.
 - Keyboard checks confirmed first-Tab skip-link focus, drawer/dialog focus trapping and restoration, Escape dismissal, and that a toast already visible before opening a course is excluded from the modal accessibility tree. The reduced-motion stylesheet is present; browser-level preference emulation was not available in this run.
 - Browser sign-in with a disposable hosted learner account opened the authenticated dashboard, and reloading restored the same learner and enrolled course. The dashboard also confirmed the hosted API response reached the interface. This local browser origin did not establish a Socket.IO connection; configure the exact frontend origin in the deployed API and verify in the target deployment. The separate hosted production-mode API E2E passed secure `__Host-` cookie attributes, session restore and refresh, learner-only notifications, cross-user read denial, learner/instructor course-room access, outsider denial, persisted message delivery to authorized members only, and logout disconnection. The exact temporary users and course were removed and confirmed absent after the run.
+
+## Public landing and shared learner demo
+
+The root page is a public landing with sample course previews and upstream attribution. It renders without contacting the API. `/#signin` opens normal sign-in; `/#signin-demo` pre-fills the shared learner credentials and requires the visitor to submit the form. Returning to the public page does not log the learner out.
+
+- Demo email: `learner.demo@jakija.example`
+- Demo password: `JakIja-Learn-Demo-2026!`
+
+These are intentionally public credentials for a dedicated learner account. The private instructor password, Supabase server secret, and encryption keys are never bundled. Demo classroom activity is shared; visitors should use fictional content. The three courses and progress rows are fictional interface samples, not complete instructional materials.
+
+The tracked `.env.production` contains public API/socket origins for `https://lms-backend-7ass.onrender.com`. Cloudflare build environment variables can override those origins. API requests allow up to 60 seconds for the free Render host to wake. Browser restrictions on cookies across `pages.dev` and `onrender.com` still depend on the visitor's browser; use frontend/API subdomains on one site for the most reliable session behavior.
+
+Provision or restore the sample account/data from the backend's `scripts/provision-demo.mjs` using server-side environment variables. The script only upserts its fixed sample IDs; it does not delete existing data.

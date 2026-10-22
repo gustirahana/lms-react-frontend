@@ -58,6 +58,7 @@ function routeResponse() {
 
 describe('keyboard and overlay accessibility', () => {
   beforeEach(() => {
+    window.history.replaceState({}, '', '/#signin');
     vi.stubGlobal('fetch', routeResponse());
     vi.stubGlobal('matchMedia', vi.fn(() => ({
       matches: true,

@@ -19,6 +19,8 @@ import { getDashboard, getCourses } from './api/client.js';
 import { getSession, isUnauthorized, login, logout, refreshSession } from './api/auth.js';
 import { appConfig } from './config.js';
 import { openRealtimeChannels } from './realtime.js';
+import Landing from './Landing.jsx';
+import { demoAccount } from './demo.js';
 
 const navigation = [
   { label: 'Overview', icon: LayoutDashboard },
@@ -50,8 +52,9 @@ function mergeNotifications(current, incoming) {
 }
 
 function LoginScreen({ onLogin, error, busy }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const demoRequested = window.location.hash === '#signin-demo';
+  const [email, setEmail] = useState(demoRequested ? demoAccount.email : '');
+  const [password, setPassword] = useState(demoRequested ? demoAccount.password : '');
 
   const submit = async (event) => {
     event.preventDefault();
@@ -65,6 +68,7 @@ function LoginScreen({ onLogin, error, busy }) {
   return (
     <main className="auth-screen">
       <form className="auth-card" onSubmit={submit}>
+        <a className="auth-home" href="#">← Back to JakIja Learn</a>
         <div className="brand-mark"><GraduationCap size={21} strokeWidth={2.2} /></div>
         <span className="section-kicker">LEARNER SPACE</span>
         <h1>Welcome back</h1>
@@ -75,6 +79,8 @@ function LoginScreen({ onLogin, error, busy }) {
         <label htmlFor="login-password">Password</label>
         <input id="login-password" autoComplete="current-password" type="password" required value={password}
           onChange={(event) => setPassword(event.target.value)} />
+        <div className="auth-demo-info"><p>Just looking around? Use our shared learner account.</p><button className="button button-outline" type="button" disabled={busy} onClick={() => { setEmail(demoAccount.email); setPassword(demoAccount.password); }}>Fill demo credentials</button></div>
+        <p className="auth-demo-warning">Demo activity is shared. Use fictional information only. The free API host may take a moment to wake up.</p>
         {error && <p className="auth-error" role="alert">{error}</p>}
         <button className="button button-dark auth-submit" type="submit" disabled={busy}>
           {busy ? 'Signing in…' : 'Sign in'}
@@ -316,7 +322,7 @@ function Metric({ label, value, suffix, icon: Icon }) {
   );
 }
 
-function App() {
+function LearnerApp() {
   const [authStatus, setAuthStatus] = useState('loading');
   const [currentUser, setCurrentUser] = useState(null);
   const [authError, setAuthError] = useState('');
@@ -560,7 +566,7 @@ function App() {
   };
 
   if (authStatus === 'loading' || authStatus === 'signing-out') {
-    return <main className="auth-screen"><p role="status">{authStatus === 'loading' ? 'Checking your session…' : 'Signing out…'}</p></main>;
+    return <main className="auth-screen"><div className="auth-card"><p role="status">{authStatus === 'loading' ? 'Checking your session…' : 'Signing out…'}</p><p>The free demo API may take up to a minute to wake up.</p><a className="auth-home" href="#">Back to public site</a></div></main>;
   }
   if (authStatus !== 'signed-in') {
     return <LoginScreen onLogin={signIn} error={authError || (authStatus === 'error' ? 'Unable to check your session. Try signing in again.' : '')} busy={authBusy} />;
@@ -596,6 +602,7 @@ function App() {
         </header>
 
         <div id="main-content" className="page-content" tabIndex={-1}>
+          {currentUser?.email === demoAccount.email && <p className="demo-workspace-notice">Shared learner demo · Courses and progress are fictional. Classroom messages are visible to other demo visitors. <a href="#">Back to public site</a></p>}
           <section className="welcome-row">
             <div><div className="date-kicker"><span className="live-dot" /> {dateLabel}</div>
               <h1>{activeNav === 'Overview' ? `Welcome, ${displayName}` : activeNav}<span className="heading-wave" aria-hidden="true">✳</span></h1>
@@ -643,4 +650,12 @@ function App() {
   );
 }
 
-export default App;
+export default function App() {
+  const [route, setRoute] = useState(() => window.location.hash);
+  useEffect(() => {
+    const updateRoute = () => setRoute(window.location.hash);
+    window.addEventListener('hashchange', updateRoute);
+    return () => window.removeEventListener('hashchange', updateRoute);
+  }, []);
+  return ['#signin', '#signin-demo', '#app'].includes(route) ? <LearnerApp /> : <Landing />;
+}

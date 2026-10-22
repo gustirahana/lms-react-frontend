@@ -44,6 +44,7 @@ function routeResponse(routes) {
 
 describe('authentication UI', () => {
   beforeEach(() => {
+    window.history.replaceState({}, '', '/#signin');
     vi.stubGlobal('fetch', vi.fn());
   });
 

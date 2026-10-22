@@ -1,6 +1,6 @@
 import { appConfig } from '../config.js';
 
-const REQUEST_TIMEOUT_MS = 10_000;
+const REQUEST_TIMEOUT_MS = 60_000;
 
 export class ApiError extends Error {
   constructor(message, { status = 0, cause } = {}) {
