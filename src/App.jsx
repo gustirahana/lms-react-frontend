@@ -566,7 +566,7 @@ function LearnerApp() {
     const matchesCategory = activeCategory === 'All courses' || course.category === activeCategory;
     return matchesSearch && matchesCategory && matchesCourseLanguage(course, contentLanguage);
   }), [activeCategory, catalog, search, locale, contentLanguage]);
-  const displayedCourses = activeNav === 'My courses' ? activeCourses.filter(course => matchesCourseLanguage(course, contentLanguage)) : filteredCatalog;
+  const displayedCourses = activeNav === 'My courses' ? activeCourses.filter(course => matchesCourseLanguage(course, contentLanguage) && (activeCategory === 'All courses' || course.category === activeCategory)) : filteredCatalog;
   const displayedError = activeNav === 'My courses' ? dashboardError : catalogError;
   const displayedLoading = activeNav === 'My courses' ? dashboardLoading : catalogLoading;
   const displayName = dashboard?.learner?.displayName || t(currentUser?.displayName) || currentUser?.email || '';
