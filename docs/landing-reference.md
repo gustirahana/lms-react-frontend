@@ -16,6 +16,6 @@ The implementation adapts that hierarchy to JakIja: original generated photograp
 The four images in `public/images/` were generated specifically for this project and compressed to WebP. WPLMS images, logos, branding, and source assets are not included. The hero image is illustrative, not a photograph of an actual learner or an endorsement. Images are sized explicitly and course thumbnails load lazily.
 
 - `learning-hero.webp`: fictional learner studying in a library.
-- `course-design-workshop.webp`: candid design workshop with plain color swatches, without writing, wireframes, or screens.
+- `course-design-notes.webp`: original design-workbook composition with readable headings and interface annotations, revised from the initial generated notebook image.
 - `course-react.webp`: an illustrative development workspace.
 - `course-backend.webp`: physical networking and computing equipment.
