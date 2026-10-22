@@ -76,11 +76,11 @@ describe('keyboard and overlay accessibility', () => {
     const user = userEvent.setup();
     render(<App />);
     await screen.findByRole('heading', { name: /Welcome, Local Accessibility Check/ });
-    const requestsBeforeSkip = fetch.mock.calls.length;
+    const workspace = document.querySelector(".app-shell");
     await user.click(screen.getByRole('link', { name: 'Skip to course content' }));
     await waitFor(() => expect(window.location.hash).toBe('#main-content'));
     expect(screen.getByRole('heading', { name: /Welcome, Local Accessibility Check/ })).toBeTruthy();
-    expect(fetch.mock.calls.length).toBe(requestsBeforeSkip);
+    expect(document.querySelector(".app-shell")).toBe(workspace);
   });
 
   it('keeps a visible toast out of the modal accessibility tree and traps/restores focus', async () => {
