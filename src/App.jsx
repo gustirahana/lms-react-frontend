@@ -657,5 +657,5 @@ export default function App() {
     window.addEventListener('hashchange', updateRoute);
     return () => window.removeEventListener('hashchange', updateRoute);
   }, []);
-  return ['#signin', '#signin-demo', '#app'].includes(route) ? <LearnerApp /> : <Landing />;
+  return ['#signin', '#signin-demo', '#app', '#main-content'].includes(route) ? <LearnerApp /> : <Landing />;
 }

@@ -72,6 +72,17 @@ describe('keyboard and overlay accessibility', () => {
     vi.unstubAllGlobals();
   });
 
+  it('keeps the learner workspace mounted when following the skip link', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await screen.findByRole('heading', { name: /Welcome, Local Accessibility Check/ });
+    const requestsBeforeSkip = fetch.mock.calls.length;
+    await user.click(screen.getByRole('link', { name: 'Skip to course content' }));
+    await waitFor(() => expect(window.location.hash).toBe('#main-content'));
+    expect(screen.getByRole('heading', { name: /Welcome, Local Accessibility Check/ })).toBeTruthy();
+    expect(fetch.mock.calls.length).toBe(requestsBeforeSkip);
+  });
+
   it('keeps a visible toast out of the modal accessibility tree and traps/restores focus', async () => {
     const user = userEvent.setup();
     render(<App />);
