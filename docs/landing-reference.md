@@ -17,5 +17,5 @@ The four images in `public/images/` were generated specifically for this project
 
 - `learning-hero.webp`: fictional learner studying in a library.
 - `course-design-notes.webp`: original design-workbook composition with readable headings and interface annotations, revised from the initial generated notebook image.
-- `course-react.webp`: an illustrative development workspace.
+- `course-react-readable.webp`: development workspace revised with legible React source and matching course-preview labels.
 - `course-backend.webp`: physical networking and computing equipment.

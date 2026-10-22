@@ -5,7 +5,7 @@ import './landing.css';
 
 const artwork = {
   Design: '/images/course-design-notes.webp',
-  Development: '/images/course-react.webp',
+  Development: '/images/course-react-readable.webp',
   Backend: '/images/course-backend.webp',
 };
 const categories = ['All courses', ...new Set(sampleCourses.map((course) => course.category))];

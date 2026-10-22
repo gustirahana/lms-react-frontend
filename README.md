@@ -82,4 +82,4 @@ Provision or restore the sample account/data from the backend's `scripts/provisi
 
 The public landing adapts the photographic hero, navy/white visual hierarchy, and course-led structure observed at [WPLMS Demos](https://demos.wplms.io/) using REA. It includes category filters, local course search with empty/reset states, and public course previews with keyboard focus trapping and Escape dismissal. The existing learner demo links and upstream JakIja credit remain in place.
 
-Four original AI-generated images are served as compressed WebP files from `public/images/` (approximately 165 KB combined). The page does not reuse the reference's photographs, endorsements, brand assets, or user counts. See [the reference evidence and asset notes](docs/landing-reference.md).
+Four original AI-generated images are served as compressed WebP files from `public/images/`. The page does not reuse the reference's photographs, endorsements, brand assets, or user counts. See [the reference evidence and asset notes](docs/landing-reference.md).
