@@ -91,3 +91,7 @@ The language selector is available on the public page, sign-in form, and learner
 The demo now has nine courses, with three records in each availability group: Indonesian-only, English-only, and bilingual. Public and learner catalogs have an exclusive course-language filter. Bilingual course titles/descriptions use the active supported translation, while single-language course copy stays in its original language. These are fictional course metadata samples; complete teaching materials are not included.
 
 `src/data/demo-courses.json` mirrors the backend's `demo/courses.json`. Keep them aligned when updating the seeded showcase. API responses carry `languages` and `translations`; the frontend validates both fields when provided.
+
+### Hosting security headers
+
+Cloudflare Pages serves `public/_headers` with a CSP restricted to this frontend, Google Fonts, and the configured Render demo API/socket origin. Update its `connect-src` when changing API hosts. The policy blocks embedding and third-party scripts. Backend rate limits apply independently; protecting Pages does not protect the Render origin from distributed traffic.
